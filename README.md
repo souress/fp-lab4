@@ -145,9 +145,143 @@ let view =
 ![image](https://github.com/souress/fp-lab4/assets/71097848/b16ce94c-4773-44c7-bc32-31b8652ca718)
 ![image](https://github.com/souress/fp-lab4/assets/71097848/e7cefc5f-44b3-4739-a034-196b932a5718)
 
+## Тестирование UI
+В соответствии с заданием необходимо было реализовать UI тесты для мини-игры. Не удалось найти фреймворки или библиотеки, позволяющие
+протестировать UI десктопного приложения, при том что тесты должны были быть написаны в функциональном стиле на языке F#
+(есть примеры на C#, но они не подошли по требованиям https://github.com/AvaloniaUI/Avalonia/blob/master/tests/Avalonia.IntegrationTests.Appium/ButtonTests.cs).
+Также не подошло по условию и веб-игра, так как остутствуют фреймворки и библиотеки для описания интерфейса на языке F#.
+Поэтому было решено написать десктопную мини-игру и отдельно интеграционные тесты на пользовательский интерфейс игры с сайта
+https://sethclydesdale.github.io/tic-tac-toe/. Тесты были написаны с использованием фреймворка Canopy, что является оберткой над Selenium.
+
+Примеры тестов:
+```fsharp
+module Tests
+
+open Xunit
+open canopy.parallell
+
+[<Fact>]
+let ``State should be initial on first run`` () =
+    use browser = functions.start canopy.types.ChromeHeadless
+    functions.url "https://sethclydesdale.github.io/tic-tac-toe/" browser
+
+    functions.click "#start-game" browser
+    functions.click "/html/body/div[2]/button[3]" browser
+
+    Assert.Equal("X: 0", (functions.element "#score-x" browser).Text)
+    Assert.Equal("Draw: 0", (functions.element "#score-draw" browser).Text)
+    Assert.Equal("O: 0", (functions.element "#score-o" browser).Text)
+
+[<Fact>]
+let ``First move should be X`` () =
+    use browser = functions.start canopy.types.ChromeHeadless
+    functions.url "https://sethclydesdale.github.io/tic-tac-toe/" browser
+
+    functions.click "#start-game" browser
+    functions.click "/html/body/div[2]/button[3]" browser
+
+    Assert.Equal("X's turn", (functions.element "#game-turn" browser).Text)
+
+[<Fact>]
+let ``Click on cell should change it's value`` () =
+    use browser = functions.start canopy.types.ChromeHeadless
+    functions.url "https://sethclydesdale.github.io/tic-tac-toe/" browser
+
+    functions.click "#start-game" browser
+    functions.click "/html/body/div[2]/button[3]" browser
+
+    functions.click "#s4" browser
+
+    Assert.Equal("X", (functions.element "/html/body/div[5]/div[3]/div[2]/div[2]/span" browser).Text)
+
+[<Fact>]
+let ``First move should switch players`` () =
+    use browser = functions.start canopy.types.ChromeHeadless
+    functions.url "https://sethclydesdale.github.io/tic-tac-toe/" browser
+
+    functions.click "#start-game" browser
+    functions.click "/html/body/div[2]/button[3]" browser
+
+    Assert.Equal("X's turn", (functions.element "#game-turn" browser).Text)
+    functions.click "#s4" browser
+
+    Assert.Equal("O's turn", (functions.element "#game-turn" browser).Text)
+
+[<Fact>]
+let ``Double click on exact same cell should not switch players`` () =
+    use browser = functions.start canopy.types.ChromeHeadless
+    functions.url "https://sethclydesdale.github.io/tic-tac-toe/" browser
+
+    functions.click "#start-game" browser
+    functions.click "/html/body/div[2]/button[3]" browser
+
+    Assert.Equal("X's turn", (functions.element "#game-turn" browser).Text)
+    functions.click "#s4" browser
+    Assert.Equal("O's turn", (functions.element "#game-turn" browser).Text)
+    functions.click "#s4" browser
+    Assert.Equal("O's turn", (functions.element "#game-turn" browser).Text)
+
+[<Fact>]
+let ``Counter X wins should increment on X win`` () =
+    use browser = functions.start canopy.types.ChromeHeadless
+    functions.url "https://sethclydesdale.github.io/tic-tac-toe/" browser
+
+    functions.click "#start-game" browser
+    functions.click "/html/body/div[2]/button[3]" browser
+
+    functions.click "#s0" browser // X
+    functions.click "#s4" browser // O
+    functions.click "#s3" browser // X
+    functions.click "#s7" browser // O
+    functions.click "#s6" browser // Win X
+
+    Assert.Equal("X WINS!", (functions.element "#game-turn" browser).Text)
+    Assert.Equal("X: 1", (functions.element "#score-x" browser).Text)
+
+[<Fact>]
+let ``Counter Draw should increment on draw`` () =
+    use browser = functions.start canopy.types.ChromeHeadless
+    functions.url "https://sethclydesdale.github.io/tic-tac-toe/" browser
+
+    functions.click "#start-game" browser
+    functions.click "/html/body/div[2]/button[3]" browser
+
+    functions.click "#s8" browser // X
+    functions.click "#s7" browser // O
+    functions.click "#s6" browser // X
+    functions.click "#s2" browser // O
+    functions.click "#s5" browser // X
+    functions.click "#s3" browser // O
+    functions.click "#s4" browser // X
+    functions.click "#s0" browser // O
+    functions.click "#s1" browser // Draw (X)
+
+    Assert.Equal("DRAW!", (functions.element "#game-turn" browser).Text)
+    Assert.Equal("Draw: 1", (functions.element "#score-draw" browser).Text)
+
+[<Fact>]
+let ``Counter O wins should increment on O win`` () =
+    use browser = functions.start canopy.types.ChromeHeadless
+    functions.url "https://sethclydesdale.github.io/tic-tac-toe/" browser
+
+    functions.click "#start-game" browser
+    functions.click "/html/body/div[2]/button[3]" browser
+
+    functions.click "#s4" browser // X
+    functions.click "#s0" browser // O
+    functions.click "#s1" browser // X
+    functions.click "#s3" browser // O
+    functions.click "#s2" browser // X
+    functions.click "#s6" browser // Win O
+
+    Assert.Equal("O WINS!", (functions.element "#game-turn" browser).Text)
+    Assert.Equal("O: 1", (functions.element "#score-o" browser).Text)
+```
+
 
 ## Вывод
 
 В результате выполнения данной лабораторной работы мною был получен практический опыт применения приёмов функционального
 программирования, было ощущение что описываю интерфейс простым текстом. В целом процесс и стиль для меня показался похож на React.
-Сложности возникли в момент выбора фреймворка и решение будет ли приложение в вебе или десктопным пришло окончательно только в конце, после уймы провалившихся попыток найти библиотеку/фреймворк для написания кода на чистом F#, без использования того же C#.
+Сложности возникли в момент выбора фреймворка и решение будет ли приложение в вебе или десктопным пришло окончательно только в конце,
+после уймы провалившихся попыток найти библиотеку/фреймворк для написания кода на чистом F#, без использования того же C#.
