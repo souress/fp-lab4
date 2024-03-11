@@ -27,7 +27,7 @@ jobs:
       uses: microsoft/setup-msbuild@main
 
     - name: Restore solution
-      run: dotnet restore .\Lab3.sln
+      run: dotnet restore .\fp-lab4.sln
 
     - name: Install linter
       run: dotnet tool install dotnet-fsharplint --version 0.21.6
