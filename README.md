@@ -141,6 +141,9 @@ let view =
                                         [ StackPanel.orientation Orientation.Horizontal
                                           StackPanel.children [ for col in 0..2 -> createButton row col gameState ] ] ] ] ] ])
 ```
+## Внешний вид
+![image](https://github.com/souress/fp-lab4/assets/71097848/b16ce94c-4773-44c7-bc32-31b8652ca718)
+![image](https://github.com/souress/fp-lab4/assets/71097848/e7cefc5f-44b3-4739-a034-196b932a5718)
 
 
 ## Вывод
