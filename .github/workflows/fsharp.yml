@@ -37,4 +37,7 @@ jobs:
     - name: Install formatter
       run: dotnet tool install fantomas
     - name: Run formatter
-      run: dotnet fantomas --check ./
+      run: dotnet fantomas --check .\
+
+    - name: Run tests
+      run: dotnet test .\fp-lab4.sln
