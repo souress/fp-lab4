@@ -69,7 +69,7 @@ let private handleClick (row: int) (col: int) (gameState: GameState) =
                 currentPlayer |> messages.Won |> gameState.TextBlockState.Set
                 Status.Stop |> gameState.Status.Set
 
-        gameState.Player.Current |> switchPlayer |> gameState.Player.Set
+            gameState.Player.Current |> switchPlayer |> gameState.Player.Set
         gameState.BoardState.Current |> gameState.BoardState.Set
     | Stop -> ()
 
